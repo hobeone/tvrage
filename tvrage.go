@@ -55,6 +55,25 @@ func (e Episode) String() string {
 	return fmt.Sprintf(`S%02dE%02d "%s"`, e.Season, e.Number, e.Title)
 }
 
+func (e *Episode) DeltaDays() string {
+	d := int(e.AirDate.Sub(time.Now()).Hours() / 24.0)
+	if d < 0 {
+		if d == -1 {
+			return "yesterday"
+		} else {
+			return fmt.Sprintf("%d days ago", -d)
+		}
+	} else if d > 0 {
+		if d == 1 {
+			return "tomorrow"
+		} else {
+			return fmt.Sprintf("in %d days", d)
+		}
+	} else {
+		return "today"
+	}
+}
+
 type Episodes []Episode
 
 func (es *Episodes) Last() *Episode {

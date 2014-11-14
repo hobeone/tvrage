@@ -232,3 +232,27 @@ func TestEpisodeListLive(t *testing.T) {
 		t.Errorf("Less than one Episode decoded")
 	}
 }
+
+type deltaTest struct {
+	episode Episode
+	output  string
+}
+
+func TestDeltaDays(t *testing.T) {
+	r := time.Now()
+	cases := []deltaTest{
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(12 * time.Hour)}}, "today"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(25 * time.Hour)}}, "tomorrow"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(((24 * 3) + 1) * time.Hour)}}, "in 3 days"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(((24 * 43) + 1) * time.Hour)}}, "in 43 days"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(-25 * time.Hour)}}, "yesterday"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(-24 * 3 * time.Hour)}}, "3 days ago"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(-24 * 120 * time.Hour)}}, "120 days ago"},
+	}
+
+	for idx, c := range cases {
+		if c.episode.DeltaDays() != c.output {
+			t.Errorf("(%d) Mismatch: %s != %s", idx+1, c.episode.DeltaDays(), c.output)
+		}
+	}
+}
