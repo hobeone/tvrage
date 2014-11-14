@@ -143,6 +143,23 @@ http://www.tvrage.com/Supernatural/episodes/1065190732
 <link>http://www.tvrage.com/Supernatural/episodes/412873</link>
 <title>Everybody Loves a Clown</title>
 </episode>
+<episode>
+<epnum>25</epnum>
+<seasonnum>43</seasonnum>
+<prodnum>3T5502</prodnum>
+<airdate>2022-12-15</airdate>
+<link>http://www.tvrage.com/Supernatural/episodes/412873</link>
+<title>Test Fake Episode</title>
+</episode>
+<episode>
+<epnum>26</epnum>
+<seasonnum>47</seasonnum>
+<prodnum>3T5502</prodnum>
+<airdate>2022-12-32</airdate>
+<link>http://www.tvrage.com/Supernatural/episodes/412873</link>
+<title>Test Fake Episode Two</title>
+</episode>
+
 </Season>
 </Episodelist>
 </Show>`
@@ -153,7 +170,7 @@ http://www.tvrage.com/Supernatural/episodes/1065190732
 		t.FailNow()
 	}
 
-	if len(res) != 4 {
+	if len(res) != 6 {
 		t.Errorf("Length mismatch: %d != %d", len(res), 4)
 	}
 	if res[0].Title != "Unaired Pilot" {
@@ -171,8 +188,26 @@ http://www.tvrage.com/Supernatural/episodes/1065190732
 		}
 	}
 
-	if res[3].String() != `S02E02 "Everybody Loves a Clown"` {
+	if res[2].String() != `S02E01 "In My Time of Dying"` {
 		t.Errorf("Episode stringer output mismatch")
+	}
+
+	lep := res.Last()
+	if lep == nil {
+		t.Errorf("Didn't find the last episode")
+	} else {
+		if lep.String() != `S02E02 "Everybody Loves a Clown"` {
+			t.Errorf("Wrong episode returned by Last(): %s", lep)
+		}
+	}
+
+	nep := res.Next()
+	if nep == nil {
+		t.Errorf("Didn't find the next episode")
+	} else {
+		if nep.String() != `S02E43 "Test Fake Episode"` {
+			t.Errorf("Wrong episode returned by Next(): %s", nep)
+		}
 	}
 
 	res, err = parseEpisodeListResult(strings.NewReader(``))

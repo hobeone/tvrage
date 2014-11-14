@@ -22,7 +22,7 @@ type Show struct {
 	Genres         []string `xml:"genres>genre"`
 }
 
-func (s *Show) String() string {
+func (s Show) String() string {
 	return fmt.Sprintf("%s [%d - %s]", s.Name, s.Started, s.Status)
 }
 
@@ -51,8 +51,39 @@ type Episode struct {
 	Title      string     `xml:"title"`
 }
 
-func (e *Episode) String() string {
+func (e Episode) String() string {
 	return fmt.Sprintf(`S%02dE%02d "%s"`, e.Season, e.Number, e.Title)
+}
+
+type Episodes []Episode
+
+func (es *Episodes) Last() *Episode {
+	var r Episode
+	t := time.Now()
+	for _, e := range *es {
+		if e.AirDate.IsZero() {
+			continue
+		}
+		if e.AirDate.Before(t) {
+			r = e
+		} else {
+			return &r
+		}
+	}
+	return nil
+}
+
+func (es *Episodes) Next() *Episode {
+	t := time.Now()
+	for _, e := range *es {
+		if e.AirDate.IsZero() {
+			continue
+		}
+		if e.AirDate.After(t) {
+			return &e
+		}
+	}
+	return nil
 }
 
 type resultSeason struct {
@@ -98,8 +129,8 @@ func Search(name string) ([]Show, error) {
 	return parseSearchResult(r.Body)
 }
 
-func parseEpisodeListResult(in io.Reader) ([]Episode, error) {
-	var es []Episode
+func parseEpisodeListResult(in io.Reader) (Episodes, error) {
+	var es Episodes
 	r := resultEpisodeList{}
 	x := xml.NewDecoder(in)
 	if err := x.Decode(&r); err != nil {
