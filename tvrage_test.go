@@ -74,6 +74,10 @@ func TestParseSearchResult(t *testing.T) {
 		t.Errorf("(3) Genres length mismatch: %d != %d", len(res[2].Genres), 2)
 	}
 
+	if res[0].String() != "Supernatural [2005 - Returning Series]" {
+		t.Errorf("Show stringer output mismatch")
+	}
+
 	res, err = parseSearchResult(strings.NewReader(``))
 	if err == nil {
 		t.Errorf("Didn't fail with empty data")
@@ -165,6 +169,10 @@ http://www.tvrage.com/Supernatural/episodes/1065190732
 		if !res[2].AirDate.Equal(testDate) {
 			t.Errorf("(3) AirDate mismatch: %s != %s", res[2].AirDate, testDate)
 		}
+	}
+
+	if res[3].String() != `S02E02 "Everybody Loves a Clown"` {
+		t.Errorf("Episode stringer output mismatch")
 	}
 
 	res, err = parseEpisodeListResult(strings.NewReader(``))

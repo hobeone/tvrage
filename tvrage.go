@@ -22,6 +22,10 @@ type Show struct {
 	Genres         []string `xml:"genres>genre"`
 }
 
+func (s *Show) String() string {
+	return fmt.Sprintf("%s [%d - %s]", s.Name, s.Started, s.Status)
+}
+
 type tvrageTime struct {
 	time.Time
 }
@@ -45,6 +49,10 @@ type Episode struct {
 	AirDate    tvrageTime `xml:"airdate"`
 	Link       string     `xml:"link"`
 	Title      string     `xml:"title"`
+}
+
+func (e *Episode) String() string {
+	return fmt.Sprintf(`S%02dE%02d "%s"`, e.Season, e.Number, e.Title)
 }
 
 type resultSeason struct {
