@@ -67,7 +67,7 @@ func (e *Episode) DeltaDays() string {
 		if d == 1 {
 			return "tomorrow"
 		} else {
-			return fmt.Sprintf("in %d days", d)
+			return fmt.Sprintf("in %d days", d+1)
 		}
 	} else {
 		return "today"
@@ -76,33 +76,36 @@ func (e *Episode) DeltaDays() string {
 
 type Episodes []Episode
 
-func (es *Episodes) Last() *Episode {
+func (es Episodes) Last() (Episode, bool) {
 	var r Episode
 	t := time.Now()
-	for _, e := range *es {
+	for _, e := range es {
 		if e.AirDate.IsZero() {
 			continue
 		}
 		if e.AirDate.Before(t) {
 			r = e
-		} else {
-			return &r
 		}
 	}
-	return nil
+	if r.AirDate.IsZero() {
+		return r, false
+	} else {
+		return r, true
+	}
 }
 
-func (es *Episodes) Next() *Episode {
+func (es Episodes) Next() (Episode, bool) {
+	var r Episode
 	t := time.Now()
-	for _, e := range *es {
+	for _, e := range es {
 		if e.AirDate.IsZero() {
 			continue
 		}
 		if e.AirDate.After(t) {
-			return &e
+			return e, true
 		}
 	}
-	return nil
+	return r, false
 }
 
 type resultSeason struct {
@@ -164,7 +167,7 @@ func parseEpisodeListResult(in io.Reader) (Episodes, error) {
 	return es, nil
 }
 
-func EpisodeList(id int) ([]Episode, error) {
+func EpisodeList(id int) (Episodes, error) {
 	q := fmt.Sprintf(EPLISTURL, id)
 	r, err := Client.Get(q)
 	if err != nil {

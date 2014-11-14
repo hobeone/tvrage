@@ -192,8 +192,8 @@ http://www.tvrage.com/Supernatural/episodes/1065190732
 		t.Errorf("Episode stringer output mismatch")
 	}
 
-	lep := res.Last()
-	if lep == nil {
+	lep, found := res.Last()
+	if !found {
 		t.Errorf("Didn't find the last episode")
 	} else {
 		if lep.String() != `S02E02 "Everybody Loves a Clown"` {
@@ -201,8 +201,8 @@ http://www.tvrage.com/Supernatural/episodes/1065190732
 		}
 	}
 
-	nep := res.Next()
-	if nep == nil {
+	nep, found := res.Next()
+	if !found {
 		t.Errorf("Didn't find the next episode")
 	} else {
 		if nep.String() != `S02E43 "Test Fake Episode"` {
@@ -243,8 +243,8 @@ func TestDeltaDays(t *testing.T) {
 	cases := []deltaTest{
 		deltaTest{Episode{AirDate: tvrageTime{r.Add(12 * time.Hour)}}, "today"},
 		deltaTest{Episode{AirDate: tvrageTime{r.Add(25 * time.Hour)}}, "tomorrow"},
-		deltaTest{Episode{AirDate: tvrageTime{r.Add(((24 * 3) + 1) * time.Hour)}}, "in 3 days"},
-		deltaTest{Episode{AirDate: tvrageTime{r.Add(((24 * 43) + 1) * time.Hour)}}, "in 43 days"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(24 * 3 * time.Hour)}}, "in 3 days"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(24 * 43 * time.Hour)}}, "in 43 days"},
 		deltaTest{Episode{AirDate: tvrageTime{r.Add(-25 * time.Hour)}}, "yesterday"},
 		deltaTest{Episode{AirDate: tvrageTime{r.Add(-24 * 3 * time.Hour)}}, "3 days ago"},
 		deltaTest{Episode{AirDate: tvrageTime{r.Add(-24 * 120 * time.Hour)}}, "120 days ago"},
