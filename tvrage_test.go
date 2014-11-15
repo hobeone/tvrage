@@ -237,24 +237,28 @@ func TestEpisodeListLive(t *testing.T) {
 
 type deltaTest struct {
 	episode Episode
+	numeric int
 	output  string
 }
 
 func TestDeltaDays(t *testing.T) {
 	r := time.Now()
 	cases := []deltaTest{
-		deltaTest{Episode{AirDate: tvrageTime{r.Add(12 * time.Hour)}}, "today"},
-		deltaTest{Episode{AirDate: tvrageTime{r.Add(25 * time.Hour)}}, "tomorrow"},
-		deltaTest{Episode{AirDate: tvrageTime{r.Add(24 * 3 * time.Hour)}}, "in 3 days"},
-		deltaTest{Episode{AirDate: tvrageTime{r.Add(24 * 43 * time.Hour)}}, "in 43 days"},
-		deltaTest{Episode{AirDate: tvrageTime{r.Add(-25 * time.Hour)}}, "yesterday"},
-		deltaTest{Episode{AirDate: tvrageTime{r.Add(-24 * 3 * time.Hour)}}, "3 days ago"},
-		deltaTest{Episode{AirDate: tvrageTime{r.Add(-24 * 120 * time.Hour)}}, "120 days ago"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(12 * time.Hour)}}, 0, "today"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(25 * time.Hour)}}, 1, "tomorrow"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(24 * 3 * time.Hour)}}, 3, "in 3 days"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(24 * 43 * time.Hour)}}, 43, "in 43 days"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(-25 * time.Hour)}}, -1, "yesterday"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(-24 * 3 * time.Hour)}}, -3, "3 days ago"},
+		deltaTest{Episode{AirDate: tvrageTime{r.Add(-24 * 120 * time.Hour)}}, -120, "120 days ago"},
 	}
 
 	for idx, c := range cases {
+		if c.episode.DeltaDaysInt() != c.numeric {
+			t.Errorf("(%d) Numeric mismatch: %d != %d", idx+1, c.episode.DeltaDaysInt(), c.numeric)
+		}
 		if c.episode.DeltaDays() != c.output {
-			t.Errorf("(%d) Mismatch: %s != %s", idx+1, c.episode.DeltaDays(), c.output)
+			t.Errorf("(%d) String mismatch: %s != %s", idx+1, c.episode.DeltaDays(), c.output)
 		}
 	}
 }

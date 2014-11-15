@@ -65,10 +65,19 @@ func (e Episode) String() string {
 	return fmt.Sprintf(`S%02dE%02d "%s"`, e.Season, e.Number, e.Title)
 }
 
+// DeltaDaysInt returns number of days since or to the episode's air date.
+func (e *Episode) DeltaDaysInt() int {
+	d := int(e.AirDate.Sub(time.Now()).Hours() / 24.0)
+	if d > 1 {
+		d += 1
+	}
+	return d
+}
+
 // DeltaDays returns a pretty string indicating the delta in days between now
 // and the episode air date.
 func (e *Episode) DeltaDays() string {
-	d := int(e.AirDate.Sub(time.Now()).Hours() / 24.0)
+	d := e.DeltaDaysInt()
 	if d < 0 {
 		if d == -1 {
 			return "yesterday"
@@ -79,7 +88,7 @@ func (e *Episode) DeltaDays() string {
 		if d == 1 {
 			return "tomorrow"
 		} else {
-			return fmt.Sprintf("in %d days", d+1)
+			return fmt.Sprintf("in %d days", d)
 		}
 	} else {
 		return "today"
