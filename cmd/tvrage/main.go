@@ -1,3 +1,5 @@
+// See LICENSE.txt for licensing information.
+
 package main
 
 import (
@@ -37,6 +39,7 @@ func main() {
 	if flagVersion {
 		fmt.Fprintf(os.Stderr, "tvrage command version: %s\n", VERSION)
 		fmt.Fprintf(os.Stderr, "tvrage library version: %s\n", tvrage.VERSION)
+		fmt.Fprintln(os.Stderr, "See LICENSE.txt for legal details.")
 		os.Exit(0)
 	}
 	if flag.NArg() < 1 {

@@ -1,3 +1,5 @@
+// See LICENSE.txt for licensing information.
+
 // Package tvrage provides basic access to tvrage.com services for finding out the last
 // and next episodes of a given TV show (plus a bit more), no API key required.
 package tvrage
