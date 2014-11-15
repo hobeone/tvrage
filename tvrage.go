@@ -126,6 +126,7 @@ const (
 	SEARCHURL = `http://services.tvrage.com/feeds/search.php?show=%s`      // URL for show searching
 	EPLISTURL = `http://services.tvrage.com/feeds/episode_list.php?sid=%d` // URL for episode list
 	TIMEFMT   = `2006-01-02`                                               // time.Parse format string for air date
+	VERSION   = `0.0.1`                                                    // library version
 )
 
 var (
