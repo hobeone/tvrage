@@ -1,4 +1,4 @@
-# tvrage
+# tvrage [![Build Status](https://travis-ci.org/drbig/tvrage.svg?branch=master)](https://travis-ci.org/drbig/tvrage) [![Coverage Status](https://img.shields.io/coveralls/drbig/tvrage.svg)](https://coveralls.io/r/drbig/tvrage?branch=master) [![GoDoc](https://godoc.org/github.com/drbig/tvrage?status.svg)](http://godoc.org/github.com/drbig/tvrage)
 
 Package tvrage provides basic access to tvrage.com services for finding out the last and next episodes of a given TV show (plus a bit more), no API key required.
 
