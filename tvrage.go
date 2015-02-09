@@ -10,21 +10,35 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 	"time"
 )
 
-// Show maps all available show data, as retrieved via Search.
+// Show maps all available show data, as retrieved via Detailed Search and ShowInfo.
+// Some fields come back with different names depending on the api used.
+// Link, Country, Started and Ended are always filled out.
+// ShowLink, OriginCountry, and StartDate may not be.
 type Show struct {
-	ID             int      `xml:"showid"`
-	Name           string   `xml:"name"`
-	Link           string   `xml:"link"`
-	Country        string   `xml:"country"`
-	Started        int      `xml:"started"`
-	Ended          int      `xml:"ended"`
-	Seasons        int      `xml:"seasons"`
-	Status         string   `xml:"status"`
-	Classification string   `xml:"classification"`
-	Genres         []string `xml:"genres>genre"`
+	ID             int64      `xml:"showid"`
+	Name           string     `xml:"name"`
+	ShowName       string     `xml:"showname,omitempty"`
+	Link           string     `xml:"link"`
+	ShowLink       string     `xml:"showlink,omitempty"`
+	Country        string     `xml:"country"`
+	OriginCountry  string     `xml:"origin_country,omitempty"`
+	Started        tvrageYear `xml:"started"`
+	StartDate      tvrageYear `xml:"startdate"`
+	Ended          tvrageYear `xml:"ended"`
+	Seasons        int64      `xml:"seasons"`
+	Status         string     `xml:"status"`
+	Runtime        int64      `xml:"runtime"`
+	Classification string     `xml:"classification"`
+	Genres         []string   `xml:"genres>genre"`
+	Network        string     `xml:"network"`
+	Airtime        string     `xml:"airtime"`
+	Airday         string     `xml:"airday"`
+	Timezone       string     `xml:"timezone"`
 }
 
 // String returns a pretty string for a given Show.
@@ -49,6 +63,26 @@ func (t *tvrageTime) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error 
 	return nil
 }
 
+// tvrageYear is a shim over crappy date formats in the TVRage results.
+// It can handle bare Years or the Mar/10/1997 format.  It will only have the year set in the result though.
+type tvrageYear int64
+
+// UnmarshalXML implements time.Time XML unmarshaling for year only tvrage.com formats.
+func (t *tvrageYear) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	var v string
+	d.DecodeElement(&v, &start)
+	if strings.Contains(v, "/") {
+		parts := strings.Split(v, "/")
+		v = parts[len(parts)-1]
+	}
+	year, err := strconv.Atoi(v)
+	if err != nil {
+		return nil
+	}
+	*t = tvrageYear(year)
+	return nil
+}
+
 // Episode maps all available episode data, as retrieved via EpisodeList.
 type Episode struct {
 	Season     int
@@ -69,7 +103,7 @@ func (e Episode) String() string {
 func (e *Episode) DeltaDaysInt() int {
 	d := int(e.AirDate.Sub(time.Now()).Hours() / 24.0)
 	if d > 1 {
-		d += 1
+		d++
 	}
 	return d
 }
@@ -81,15 +115,13 @@ func (e *Episode) DeltaDays() string {
 	if d < 0 {
 		if d == -1 {
 			return "yesterday"
-		} else {
-			return fmt.Sprintf("%d days ago", -d)
 		}
+		return fmt.Sprintf("%d days ago", -d)
 	} else if d > 0 {
 		if d == 1 {
 			return "tomorrow"
-		} else {
-			return fmt.Sprintf("in %d days", d)
 		}
+		return fmt.Sprintf("in %d days", d)
 	} else {
 		return "today"
 	}
@@ -152,10 +184,11 @@ type resultSearch struct {
 }
 
 const (
-	SEARCHURL = `http://services.tvrage.com/feeds/search.php?show=%s`      // URL for show searching
+	SEARCHURL = `http://services.tvrage.com/feeds/full_search.php?show=%s` // URL for show searching
 	EPLISTURL = `http://services.tvrage.com/feeds/episode_list.php?sid=%d` // URL for episode list
+	SHOWURL   = `http://services.tvrage.com/feeds/showinfo.php?sid=%d`     // URL for episode list
 	TIMEFMT   = `2006-01-02`                                               // time.Parse format string for air date
-	VERSION   = `0.0.1`                                                    // library version
+	VERSION   = `0.0.2`                                                    // library version
 )
 
 var (
@@ -172,6 +205,18 @@ func parseSearchResult(in io.Reader) ([]Show, error) {
 	return r.Shows, nil
 }
 
+func parseGetResult(in io.Reader) (*Show, error) {
+	r := Show{}
+	x := xml.NewDecoder(in)
+	if err := x.Decode(&r); err != nil {
+		return nil, err
+	}
+	r.Name = r.ShowName
+	r.Link = r.ShowLink
+	r.Country = r.OriginCountry
+	return &r, nil
+}
+
 // Search retrieves matched shows for the given name.
 func Search(name string) ([]Show, error) {
 	q := fmt.Sprintf(SEARCHURL, url.QueryEscape(name))
@@ -181,6 +226,17 @@ func Search(name string) ([]Show, error) {
 	}
 	defer r.Body.Close()
 	return parseSearchResult(r.Body)
+}
+
+// Get retrieves the show with the given id
+func Get(id int64) (*Show, error) {
+	q := fmt.Sprintf(SHOWURL, id)
+	r, err := Client.Get(q)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Body.Close()
+	return parseGetResult(r.Body)
 }
 
 // parseEpisodeListResults parses the XML as retrieved by EpisodeList.

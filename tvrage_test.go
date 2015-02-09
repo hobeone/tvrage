@@ -80,6 +80,10 @@ func TestParseSearchResult(t *testing.T) {
 		t.Errorf("Show stringer output mismatch")
 	}
 
+	if res[0].Started != 2005 {
+		t.Errorf("Show Started name mismatch: %v != %v", res[0].Started, 2005)
+	}
+
 	res, err = parseSearchResult(strings.NewReader(``))
 	if err == nil {
 		t.Errorf("Didn't fail with empty data")
@@ -100,6 +104,76 @@ func TestSearchLive(t *testing.T) {
 
 	if len(r) < 1 {
 		t.Errorf("Less than one Show decoded")
+	}
+}
+
+func TestParseGetResult(t *testing.T) {
+	input := `<Showinfo>
+<showid>2930</showid>
+<showname>Buffy the Vampire Slayer</showname>
+<showlink>http://tvrage.com/Buffy_The_Vampire_Slayer</showlink>
+<seasons>7</seasons>
+<started>1997</started>
+<startdate>Mar/10/1997</startdate>
+<ended>May/20/2003</ended>
+<origin_country>US</origin_country>
+<status>Ended</status>
+<classification>Scripted</classification>
+<genres>
+<genre>Action</genre>
+<genre>Adventure</genre>
+<genre>Comedy</genre>
+<genre>Drama</genre>
+<genre>Horror/Supernatural</genre>
+<genre>Mystery</genre>
+<genre>Sci-Fi</genre>
+</genres>
+<runtime>60</runtime>
+<network country="US">UPN</network>
+<airtime>20:00</airtime>
+<airday>Tuesday</airday>
+<timezone>GMT-5 +DST</timezone>
+<akas>
+<aka country="DE">Buffy - Im Bann der Dämonen</aka>
+<aka country="NO">Buffy - Vampyrenes skrekk</aka>
+<aka country="HU">Buffy a vámpírok réme</aka>
+<aka country="FR">Buffy Contre les Vampires</aka>
+<aka country="IT">Buffy l'Ammazza Vampiri</aka>
+<aka country="PL">Buffy postrach wampirów</aka>
+<aka country="BR">Buffy, a Caça-Vampiros</aka>
+<aka country="PT">Buffy, a Caçadora de Vampiros</aka>
+<aka country="ES">Buffy, Cazavampiros</aka>
+<aka country="HR">Buffy, ubojica vampira</aka>
+<aka country="FI">Buffy, vampyyrintappaja</aka>
+<aka country="EE">Vampiiritapja Buffy</aka>
+<aka country="IS">Vampírubaninn Buffy</aka>
+<aka country="RU">Баффи – истребительница вампиров</aka>
+</akas>
+</Showinfo>`
+
+	res, err := parseGetResult(strings.NewReader(input))
+	if err != nil {
+		t.Errorf("Decode error: %s", err)
+		t.FailNow()
+	}
+
+	if res.ID != 2930 {
+		t.Errorf("Didn't parse ID correctly: 2930 != %d", res.ID)
+	}
+
+	name := "Buffy the Vampire Slayer"
+	if res.Name != name {
+		t.Errorf("Didn't parse Name correctly: %s != '%s'", name, res.Name)
+	}
+
+	link := "http://tvrage.com/Buffy_The_Vampire_Slayer"
+	if res.Link != link {
+		t.Errorf("Didn't parse Link correctly: %s != '%s'", link, res.Link)
+	}
+
+	start := time.Date(1997, time.January, 1, 0, 0, 0, 0, time.UTC)
+	if res.Started != 1997 {
+		t.Errorf("Error parsing started date: %v != %v", res.Started, start)
 	}
 }
 
